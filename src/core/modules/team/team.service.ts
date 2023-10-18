@@ -22,7 +22,7 @@ export class TeamService {
     });
   }
 
-  async addMember(idTim: number, nip: number): Promise<Member> {
+  async addMember(idTim: number, nip: string): Promise<Member> {
     // Cari tim berdasarkan idTim
     const team = await this.teamRepository.findByPk(idTim);
 
@@ -41,7 +41,7 @@ export class TeamService {
     // Tambahkan anggota ke dalam tim dengan menggunakan model Member
     const member = await this.memberRepository.create({
       teamId: team.idTim,
-      userId: user.nip,
+      userId: user.nip
       // Anda juga dapat menambahkan data tambahan ke dalam tabel Member sesuai kebutuhan.
     });
 
@@ -57,7 +57,7 @@ export class TeamService {
     });
   }
 
-  async findByUserId(userId: number): Promise<Team[]> {
+  async findByUserId(userId: string): Promise<Team[]> {
     return await this.teamRepository.findAll<Team>({
       where: { userId }, // Filter by user ID
       include: [{ model: User, attributes: { exclude: ['password'] } }],
@@ -73,7 +73,7 @@ export class TeamService {
     return members;
   }
 
-  async deleteMember(idTim: number, nip: number): Promise<void> {
+  async deleteMember(idTim: number, nip: string): Promise<void> {
     // Cari tim berdasarkan idTim
     const team = await this.teamRepository.findByPk(idTim);
   

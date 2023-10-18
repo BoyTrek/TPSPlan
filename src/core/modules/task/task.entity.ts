@@ -27,7 +27,7 @@ export class Task extends Model<Task> {
     type: DataType.STRING,
     allowNull: true,
   })
-  dueDate: String;
+  dueDate: string;
 
   @Column({
     type: DataType.STRING,

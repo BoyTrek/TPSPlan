@@ -4,8 +4,8 @@ import { UserRole } from '../users/user.dto';
 export class MemberDTO {
   
   readonly teamId: number;
-  readonly userId: number;
-  readonly memberId: number;
+  readonly userId: string;
+  readonly memberId: string;
 
   // role?: UserRole;
 }

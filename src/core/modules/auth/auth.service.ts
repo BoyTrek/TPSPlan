@@ -1,27 +1,106 @@
 import {
   BadRequestException,
-  Injectable,
-  NotFoundException,
   ForbiddenException,
-  InternalServerErrorException,
   HttpException,
   HttpStatus,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { User } from '../users/User.entity';
+import { MailService } from '../mail/mail.service';
 import { UploadService } from 'src/core/upload/upload.service';
-import { UserDto, UserStatus } from '../users/user.dto';
+import * as multer from 'multer';
+
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService, // Injeksi MailService
     private readonly uploadService: UploadService,
   ) {}
 
+
+
+
+  async forgotPassword(email: string) {
+    
+    const user = await this.userService.findOneByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Email is not associated with a user.');
+    }
+
+    const resetPasswordToken = this.jwtService.sign(
+      { email },
+      { expiresIn: '1h' },
+    );
+
+    const resetLink = `http://192.168.1.4:3000/authentication/repassword`;
+
+    const emailContent = `
+      <p>Hello!</p>
+      <p>You have requested to reset your password. Please click the link below to reset it:</p>
+      <p><a href="${resetLink}">Reset Password</a></p>
+      <p>If you did not request this, please ignore this email.</p>
+    `;
+
+    // Simpan token reset password ke dalam basis data untuk validasi nanti
+    user.resetPasswordExpires = resetPasswordToken;
+    await user.save();
+
+    
+    // Kirim email verifikasi dengan token reset password ke pengguna
+    this.mailService.sendForgotPasswordEmail(user.email, emailContent);
+
+    return {message: 'Password reset email sent successfully' , resetPasswordToken};
+
+  }
+
+  async resetPassword(
+    token: string,
+    newPassword: string,
+    newRepassword: string,
+  ): Promise<string> {
+    try {
+      const decodedToken = this.jwtService.verify(token); // Verifikasi token
+      const user = await this.userService.findOneByEmail(decodedToken.email);
+      if (!user) {
+        throw new NotFoundException('User not found.');
+      }
+
+      // Validasi kata sandi baru dan konfirmasi kata sandi
+      if (newPassword !== newRepassword) {
+        throw new BadRequestException(
+          'Password and confirmation password do not match.',
+        );
+      }
+
+      // Validasi waktu kedaluwarsa token
+      if (user.resetPasswordExpires && new Date() > new Date(user.resetPasswordExpires)) {
+        
+      throw new BadRequestException('Reset password link has expired. Please request a new one.');
+    }
+
+      // Hash kata sandi baru
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Perbarui kata sandi pengguna di basis data
+      user.password = hashedPassword;
+
+      // Kemudian, Anda dapat menghapus token reset password dari basis data
+      user.resetPasswordExpires = null;
+      await user.save();
+
+      // Kemudian, Anda dapat mengembalikan respons sukses
+      return 'Password reset successfully';
+    } catch (error) {
+      throw new BadRequestException('Invalid or expired token.');
+    }
+  }
   private failedLoginAttempts = new Map<string, number>();
 
   async validateUser(username: string, pass: string) {
@@ -71,40 +150,52 @@ export class AuthService {
     return { user, token };
   }
 
+  private generateRandomPassword(): string {
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const passwordLength = 12; // Panjang kata sandi yang diinginkan
+    let password = '';
+
+    for (let i = 0; i < passwordLength; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      password += characters[randomIndex];
+    }
+
+    return password;
+  }
+
+  
+
   public async create(user) {
-    // Validasi password dan repassword
-    if (user.password !== user.repassword) {
-      throw new HttpException
-      ('Password and repassword do not match',
-      HttpStatus.CREATED,
-      );
-    }
+    // Generate a random password
+    const randomPassword = this.generateRandomPassword();
 
-    // Hash password
-    const hashedPassword = await this.hashPassword(user.password);
+    // Hash the random password
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-    try {
-      // Buat pengguna baru dalam database
-      const newUser = await this.userService.create({
-        ...user,
-        password: hashedPassword,
-      });
+    // Omit repassword from the user object
+    const { repassword, ...userWithoutRepassword } = user;
 
-      // Dapatkan data pengguna tanpa password
-      const { password, ...userData } = newUser['dataValues'];
+    // Create the user with the random password
+    const newUser = await this.userService.create({
+      ...userWithoutRepassword,
+      password: hashedPassword,
+    });
 
-      // Generate token untuk pengguna
-      const token = await this.generateToken(userData);
+    // Send the random password to the user's email
+    await this.mailService.sendRandomPasswordEmail(
+      newUser.email,
+      randomPassword,
+    );
 
-      // Mengembalikan data pengguna dan token
-      return { user: userData, token };
-    } catch (error) {
-      // Tangani kesalahan pembuatan pengguna dengan memberikan respons yang sesuai
-      throw new HttpException
-      ('Email atau NIP Sudah Terdaftar',
-      HttpStatus.CREATED,
-      );
-    }
+    // tslint:disable-next-line: no-string-literal
+    const { password, ...result } = newUser['dataValues'];
+
+    // Generate token
+    const token = await this.generateToken(result);
+
+    // Return the user and the token
+    return { user: result, token };
   }
 
   public async getDataUser() {
@@ -140,6 +231,16 @@ export class AuthService {
   }
 
   // auth.service.ts
+  async deleteUser(userNip: number): Promise<void> {
+    const user = await this.userService.findOneById(userNip);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userNip} not found`);
+    }
+
+    // Hapus pengguna dari layanan pengguna
+    await this.userService.deleteUser(userNip);
+  }
 
   async updateUser(
     userId: number,
@@ -254,4 +355,5 @@ export class AuthService {
 
   //   return user;
   // }
+
 }

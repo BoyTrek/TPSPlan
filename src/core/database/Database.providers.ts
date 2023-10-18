@@ -6,7 +6,7 @@ import { Team } from "../modules/team/team.entity";
 import { Member } from "../modules/member/member.entity";
 import { Task } from "../modules/task/task.entity";
 import { Project } from "../modules/project/project.entity";
-import { DatabaseFile } from "../upload/entities/upload.entity"
+import { DatabaseFile } from "../upload/entities/upload.entity";
 
 export const databaseProviders = [{
     provide: SEQUELIZE,

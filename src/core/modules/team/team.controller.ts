@@ -25,7 +25,7 @@ import { ApiParam } from '@nestjs/swagger';
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
-  // @hasRoles(UserRole.ADMIN)
+  @hasRoles(UserRole.SUPERADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get()
   async findAll() {
@@ -36,7 +36,7 @@ export class TeamController {
   @hasRoles(UserRole.ADMIN, UserRole.USER)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get('/:userNip')
-  async findByUserId(@Param('userNip') userId: number): Promise<TeamEntity[]> {
+  async findByUserId(@Param('userNip') userId: string): Promise<TeamEntity[]> {
     try {
       const teams = await this.teamService.findByUserId(userId);
       return teams;
@@ -98,7 +98,7 @@ export class TeamController {
   @Delete(':idTim/members/:nip')
   async deleteMember(
     @Param('idTim') idTim: number,
-    @Param('nip') nip: number,
+    @Param('nip') nip: string,
   ): Promise<void> {
     try {
       await this.teamService.deleteMember(idTim, nip);

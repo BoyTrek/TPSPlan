@@ -6,12 +6,14 @@ import {
   UseGuards,
   Get,
   Put,
+  Delete,
   Param,
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
+  ParseIntPipe,
+  Query,
   Res,
-  Delete,
   UseInterceptors,
   ForbiddenException,
   UploadedFile,
@@ -21,10 +23,10 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { UserDto, UserRole, UserStatus } from '../../modules/users/user.dto';
 import { DoesUserExist } from 'src/core/guards/UserExist.guard';
+import { UploadService } from 'src/core/upload/upload.service';
 import { hasRoles } from './decorators/roles.decorators';
 import { RolesGuard } from 'src/core/guards/roles.guard';
 import { ApiParam } from '@nestjs/swagger';
-import { UploadService } from 'src/core/upload/upload.service';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { DatabaseFile } from 'src/core/upload/entities/upload.entity';
@@ -37,7 +39,7 @@ export class AuthController {
   constructor(
     private authService: AuthService,
     private readonly uploadService: UploadService,
-  ) {}
+  ) {}  
 
   @UseGuards(AuthGuard('local'))
   @Post('/login')
@@ -63,6 +65,7 @@ export class AuthController {
     }
   }
 
+
   @UseGuards(AuthGuard('jwt'))
   @Get('/user/by-nip/:nip')
   async getUserByNip(@Param('nip') nip: number) {
@@ -84,12 +87,18 @@ export class AuthController {
 
   // @hasRoles(UserRole.SUPERADMIN)
   // @UseGuards(AuthGuard('jwt'), RolesGuard, DoesUserExist)
+  @ApiParam({ name: 'nip', description: 'NIP', type: 'number' })
+  @ApiParam({ name: 'name', description: 'Name', type: 'string' })
+  @ApiParam({ name: 'email', description: 'Email', type: 'string' })
+  @ApiParam({ name: 'password', description: 'Password', type: 'string' })
+  @ApiParam({ name: 'role', description: 'Role', type: 'enum' })
   @Post('/signup')
-  async create(@Body() user: UserDto) {
-    // Set status pengguna ke 'Active' saat mendaftar
-    user.status = UserStatus.Active; // Sesuaikan dengan nilai status yang sesuai
+  async registerAndSendPassword(@Body() user: UserDto) {
+    // Panggil metode create di AuthService untuk membuat pengguna dengan kata sandi acak
+    const result = await this.authService.create(user);
 
-    return await this.authService.create(user);
+    // Kembalikan respons sesuai kebutuhan Anda
+    return { message: 'User created successfully and password sent via email' };
   }
 
   @hasRoles(UserRole.SUPERADMIN, UserRole.ADMIN)
@@ -102,16 +111,11 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Put('/update-password/:userId')
   async updatePassword(
-    @Param('userId') userId: string,
+    @Param('userId') userId: number,
     @Body('currentPassword') currentPassword: string,
     @Body('newPassword') newPassword: string,
   ) {
-    const numericUserId = parseInt(userId, 10); // Mengonversi userId dari string ke number
-    await this.authService.updatePassword(
-      numericUserId,
-      currentPassword,
-      newPassword,
-    );
+    await this.authService.updatePassword(userId, currentPassword, newPassword);
     return { message: 'Password updated successfully' };
   }
 
@@ -141,6 +145,28 @@ export class AuthController {
         'Terjadi kesalahan dalam mengupdate pengguna.',
       );
     }
+  }
+
+  @Delete('user/:nip')
+  async deleteUser(
+    @Param('nip', ParseIntPipe) nip: number,
+  ): Promise<{ message: string }> {
+    await this.authService.deleteUser(nip);
+    return { message: 'Data berhasil dihapus' };
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Post('reset-password/:token')
+  async resetPassword(
+    @Param('token') token: string,
+    @Body('newPassword') newPassword: string,
+    @Body('confPassword') newRepassword: string,
+  ) {
+    return this.authService.resetPassword(token, newPassword, newRepassword);
   }
 
   // Avatar
@@ -208,18 +234,13 @@ export class AuthController {
     return 'Successfully deleted';
   }
 
-  // @Put(':nip/status')
-  // async updateStatus(@Param('nip') nip: number, @Body('status') status: UserStatus): Promise<UserDto> {
-  //   try {
-  //     const updatedUser = await this.authService.updateUserStatus(nip, status);
-  //     return updatedUser;
-  //   } catch (error) {
-  //     if (error instanceof NotFoundException) {
-  //       // Tanggapan jika pengguna dengan NIP tertentu tidak ditemukan
-  //       throw new NotFoundException(error.message);
-  //     }
-  //     // Tanggapan jika terjadi kesalahan server
-  //     throw error;
-  //   }
+  // @Post('reset-password')
+  // async resetPassword(
+  //   @Body('token') token: string,
+  //   @Body('password') newPassword: string,
+  //   @Body('repassword') confirmPassword: string,
+  // ) {
+  //   await this.authService.resetPassword(token, newPassword, confirmPassword);
+  //   return 'Password reset successfully';
   // }
 }

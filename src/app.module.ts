@@ -7,6 +7,7 @@ import { ProjectModule } from './core/modules/project/project.module';
 import { TeamModule } from './core/modules/team/team.module';
 import { MemberModule } from './core/modules/member/member.module';
 import { TaskModule } from './core/modules/task/task.module';
+import { MailModule } from './core/modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TaskModule } from './core/modules/task/task.module';
     TeamModule,
     MemberModule,
     TaskModule,
+    MailModule
   ],
   
 })

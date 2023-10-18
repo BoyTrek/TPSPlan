@@ -8,6 +8,7 @@ import { JwtStrategy } from './jwt.strategy';
 import { AuthService } from './auth.service';
 import { RolesGuard } from 'src/core/guards/roles.guard';
 import { JwtAuthGuard } from 'src/core/guards/jwt-auth.guard';
+import { MailModule } from '../mail/mail.module';
 import { UploadService } from 'src/core/upload/upload.service';
 import { uploadProviders } from 'src/core/upload/upload.providers';
 
@@ -16,6 +17,7 @@ import { uploadProviders } from 'src/core/upload/upload.providers';
     PassportModule,
     UsersModule,
     AuthModule,
+    MailModule,
     JwtModule.register({
       secret: process.env.JWTKEY,
       signOptions: { expiresIn: process.env.TOKEN_EXPIRATION },

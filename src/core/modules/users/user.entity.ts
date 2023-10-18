@@ -51,6 +51,15 @@ export class User extends Model<User> {
   })
   status: UserStatus;
 
+  
+  @Column({
+    type: DataType.STRING, // Kolom untuk menyimpan waktu kedaluwarsa reset password
+    allowNull: true, // Diizinkan untuk bernilai null jika reset password tidak aktif
+  })
+  resetPasswordExpires: string;
+
   @HasOne(() => DatabaseFile)
   avatar: DatabaseFile;
+
+
 }
