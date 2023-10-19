@@ -109,8 +109,8 @@ export class TeamController {
     }
   }
 
-  @Get(':id/members')
-  async findMembersByTeamId(@Param('id') idTim: number): Promise<Member[]> {
+ @Get('members/:idTim')
+  async findMembersByTeamId(@Param('idTim') idTim: number): Promise<Member[]> {
     try {
       const members = await this.teamService.findMembersByTeamId(idTim);
       if (!members || members.length === 0) {
