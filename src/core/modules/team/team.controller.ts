@@ -27,13 +27,13 @@ export class TeamController {
 
   @hasRoles(UserRole.SUPERADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Get()
+  @Get('/allTeam')
   async findAll() {
     // Dapatkan semua tim dalam database
     return await this.teamService.findAll();
   }
 
-  @hasRoles(UserRole.ADMIN, UserRole.USER)
+  // @hasRoles(UserRole.ADMIN, UserRole.USER)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get('/:userNip')
   async findByUserId(@Param('userNip') userId: string): Promise<TeamEntity[]> {
@@ -57,7 +57,7 @@ export class TeamController {
     return await this.teamService.create(team, req.user.nip);
   }
 
-  @hasRoles(UserRole.ADMIN)
+  // @hasRoles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Post(':idTim/add-member')
   async addMemberToTeam(
@@ -77,21 +77,6 @@ export class TeamController {
       throw error;
     }
   }
-
-  // @Get(':idTim/members')
-  // async findMembersByTeamId(
-  //   @Param('idTim') idTim: number,
-  // ): Promise<MemberEntity[]> {
-  //   try {
-  //     const members = await this.teamService.findMembersByTeamId(idTim);
-  //     return members;
-  //   } catch (error) {
-  //     if (error instanceof NotFoundException) {
-  //       throw new NotFoundException(error.message);
-  //     }
-  //     throw error;
-  //   }
-  // }
 
   @hasRoles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)

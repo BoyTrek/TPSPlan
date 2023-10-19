@@ -74,4 +74,9 @@ async create(
     }
   }
 
+  @Get('user/:userId')
+  async getTasksByUserId(@Param('userId') userId: number): Promise<Task[]> {
+    return this.taskService.getTasksByUserId(userId);
+  }
+
 }

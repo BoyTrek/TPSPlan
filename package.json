@@ -35,6 +35,7 @@
     "dotenv": "^16.3.1",
     "image-size": "^1.0.2",
     "image-type": "^5.2.0",
+    "lsof": "^0.1.0",
     "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",

@@ -71,6 +71,23 @@ export class ProjectService {
       });
 }
 
+async getProjectByIdTim(idTim: number): Promise<Project[]> {
+  // Cari proyek berdasarkan idTim
+  const projects = await this.projectRepository.findAll({
+      where: {
+          idTim: idTim,
+      },
+      include: [{ all: true }], // Jika Anda ingin mengambil data terkait dengan proyek, termasuk data tim
+  });
+
+  // Jika tidak ada proyek yang ditemukan untuk tim ini, lempar NotFoundException
+  if (!projects || projects.length === 0) {
+      throw new NotFoundException(`Tidak ada proyek ditemukan untuk tim dengan ID ${idTim}`);
+  }
+
+  return projects;
+}
+
 async delete(id: number): Promise<void> {
     // Temukan proyek berdasarkan id
     const project = await this.projectRepository.findByPk(id);

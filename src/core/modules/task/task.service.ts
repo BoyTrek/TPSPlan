@@ -86,4 +86,19 @@ export class TaskService {
     // Setelah tugas dihapus, log pesan informasi.
     this.logger.log(`Tugas dengan ID ${id} telah dihapus.`);
   }
+
+  async getTasksByUserId(userId: number): Promise<Task[]> {
+    const tasks = await this.taskRepository.findAll<Task>({
+      where: {
+        memberId: userId,
+      },
+      include: [{ all: true }], // Mengambil semua data terkait
+    });
+  
+    if (!tasks || tasks.length === 0) {
+      throw new NotFoundException(`No tasks found for user with ID ${userId}`);
+    }
+  
+    return tasks;
+  }
 }
