@@ -68,13 +68,6 @@ export class ProjectController {
         }
     }
 
-  // @hasRoles(UserRole.ADMIN, UserRole.USER)
-  // @UseGuards(AuthGuard('jwt'), RolesGuard)
-  // @Get(':id')
-  // async findById(@Param('id') id: number): Promise<ProjectEntity> {
-  //   return await this.projectService.findById(id);
-  // }
-
   // @hasRoles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Put(':id')

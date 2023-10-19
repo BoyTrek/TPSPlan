@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { TeamService } from './team.service';
 import { Team as TeamEntity } from './team.entity';
-import { Member as MemberEntity } from '../member/member.entity';
+import { Member, Member as MemberEntity } from '../member/member.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { TeamDto } from './team.dto';
 import { MemberDTO } from '../member/member.dto';
@@ -101,6 +101,22 @@ export class TeamController {
   async deleteTeam(@Param('idTim') idTim: number): Promise<void> {
     try {
       await this.teamService.deleteTeam(idTim);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Get(':id/members')
+  async findMembersByTeamId(@Param('id') idTim: number): Promise<Member[]> {
+    try {
+      const members = await this.teamService.findMembersByTeamId(idTim);
+      if (!members || members.length === 0) {
+        throw new NotFoundException(`No members found for team with ID ${idTim}`);
+      }
+      return members;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw new NotFoundException(error.message);

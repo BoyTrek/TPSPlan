@@ -8,7 +8,6 @@ import {
 } from 'sequelize-typescript';
 import { Team } from '../team/team.entity';
 import { User } from '../users/user.entity';
-import { UserRole } from '../users/user.dto';
 
 @Table
 export class Member extends Model<Member> {
