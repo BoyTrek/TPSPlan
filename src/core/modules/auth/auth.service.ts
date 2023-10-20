@@ -13,6 +13,7 @@ import { User } from '../users/User.entity';
 import { MailService } from '../mail/mail.service';
 import { UploadService } from 'src/core/upload/upload.service';
 import * as multer from 'multer';
+import { File } from 'buffer';
 
 
 @Injectable()
@@ -149,6 +150,27 @@ export class AuthService {
     const token = await this.generateToken(user);
     return { user, token };
   }
+
+  //Login Dengan response base64 juga
+  // async login(user: User): Promise<{ user: User; token: string; avatar: any }> {
+  //   try {
+  //     // Ambil avatar dari basis data atau server menggunakan service uploadService
+  //     const avatar = await this.uploadService.getOneByUserId(user.nip);
+  
+  //     // Generate token
+  //     const token = await this.generateToken(user);
+  
+  //     // Sertakan avatar dalam respons
+  //     return { user, token, avatar };
+  //   } catch (error) {
+  //     // Tangani kesalahan jika terjadi
+  //     throw new HttpException(
+  //       'Gagal login: ' + error.message,
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
+  
 
   private generateRandomPassword(): string {
     const characters =

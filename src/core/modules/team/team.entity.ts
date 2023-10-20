@@ -1,5 +1,7 @@
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { BelongsTo, Column, DataType, ForeignKey, Model, Table, HasMany } from "sequelize-typescript";
 import { User } from "../users/User.entity";
+import { Member } from "../member/member.entity";
+import { Project } from "../project/project.entity";
 
 @Table
 export class Team extends Model<Team> {
@@ -27,6 +29,10 @@ export class Team extends Model<Team> {
   @BelongsTo(() => User)
   user: User;
 
-  
+  @HasMany(() => Member)
+  members: Member[];
+
+  @HasMany(() => Project)
+  projects: Project[];
 
 }

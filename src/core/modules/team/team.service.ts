@@ -4,6 +4,7 @@ import { Team } from './team.entity';
 import { TeamDto } from './team.dto';
 import { User } from '../users/User.entity';
 import { Member } from '../member/member.entity';
+// import { Project } from '../project/project.entity';
 
 @Injectable()
 export class TeamService {
@@ -21,6 +22,7 @@ export class TeamService {
       include: [{ model: User, attributes: { exclude: ['password'] } }],
     });
   }
+  
 
   async addMember(idTim: number, nip: string): Promise<Member> {
     // Cari tim berdasarkan idTim
@@ -121,6 +123,5 @@ export class TeamService {
     // Hapus tim dari tabel Team
     await team.destroy();
   }
-  
   
 }

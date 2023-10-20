@@ -11,7 +11,7 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { TeamService } from './team.service';
-import { Team as TeamEntity } from './team.entity';
+import { Team, Team as TeamEntity } from './team.entity';
 import { Member, Member as MemberEntity } from '../member/member.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { TeamDto } from './team.dto';
@@ -25,7 +25,7 @@ import { ApiParam } from '@nestjs/swagger';
 export class TeamController {
   constructor(private readonly teamService: TeamService) {}
 
-  @hasRoles(UserRole.SUPERADMIN)
+  // @hasRoles(UserRole.SUPERADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Get('/allTeam')
   async findAll() {
@@ -78,7 +78,7 @@ export class TeamController {
     }
   }
 
-  @hasRoles(UserRole.ADMIN)
+  // @hasRoles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Delete(':idTim/members/:nip')
   async deleteMember(
@@ -95,7 +95,7 @@ export class TeamController {
     }
   }
 
-  @hasRoles(UserRole.ADMIN)
+  // @hasRoles(UserRole.ADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Delete(':idTim')
   async deleteTeam(@Param('idTim') idTim: number): Promise<void> {
@@ -109,8 +109,8 @@ export class TeamController {
     }
   }
 
-  @Get(':id/members')
-  async findMembersByTeamId(@Param('id') idTim: number): Promise<Member[]> {
+  @Get('members/:idTim')
+  async findMembersByTeamId(@Param('idTim') idTim: number): Promise<Member[]> {
     try {
       const members = await this.teamService.findMembersByTeamId(idTim);
       if (!members || members.length === 0) {
@@ -124,4 +124,5 @@ export class TeamController {
       throw error;
     }
   }
+
 }

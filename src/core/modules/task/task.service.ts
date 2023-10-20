@@ -54,7 +54,7 @@ export class TaskService {
 
   async findAll(): Promise<Task[]> {
     return await this.taskRepository.findAll<Task>({
-      include: [{ all: true }],
+      // include: [{ all: true }],
     });
   } 
 
