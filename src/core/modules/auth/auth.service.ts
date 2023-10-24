@@ -320,46 +320,42 @@ export class AuthService {
     return user;
   }
 
-  async uploadAvatar(file: Express.Multer.File, userId: string): Promise<any> {
-    try {
-      // Get the file extension
-      const fileExtension = path.extname(file.originalname).toLowerCase();
-  
-      // Check if the file extension is allowed
-      if (['.jpg', '.jpeg', '.png'].includes(fileExtension)) {
-        // File extension is allowed, proceed with processing
-        const fileBuffer = file.buffer.toString('base64');
-        const base64Data = `data:${file.mimetype};base64,${fileBuffer}`;
-  
-      // Menyusun nama file dengan menambahkan timestamp untuk memastikan keunikan
-      const timestamp = new Date().getTime();
-      const fileName = `${timestamp}_${file.originalname}`;
-  
-      // Menyimpan data base64 ke database dengan menyertakan filename yang baru
-      const uploadedFile = await this.uploadService.create(
-        fileName, // Gunakan nama file yang baru disusun
-        base64Data,
-        userId,
-      );
-  
-      return uploadedFile; // Return the uploaded file details if needed
-    } else {
-      // File extension is not allowed, throw an error
+    async uploadAvatar(file: Express.Multer.File, userId: string): Promise<any> {
+      try {
+        // Get the file extension
+        const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+        // Check if the file extension is allowed
+        if (['.jpg', '.jpeg', '.png'].includes(fileExtension)) {
+          // File extension is allowed, proceed with processing
+          const fileBuffer = file.buffer.toString('base64');
+          const base64Data = `data:${file.mimetype};base64,${fileBuffer}`;
+    
+        // Menyusun nama file dengan menambahkan timestamp untuk memastikan keunikan
+        const timestamp = new Date().getTime();
+        const fileName = `${timestamp}_${file.originalname}`;
+    
+        // Menyimpan data base64 ke database dengan menyertakan filename yang baru
+        const uploadedFile = await this.uploadService.create(
+          fileName, // Gunakan nama file yang baru disusun
+          base64Data,
+          userId,
+        );
+    
+        return uploadedFile; // Return the uploaded file details if needed
+      } else {
+        // File extension is not allowed, throw an error
+        throw new HttpException('File tidak valid, hanya menerima JPG, JPEG, dan PNG.', HttpStatus.OK);
+      }
+    } catch (error) {
       throw new HttpException('File tidak valid, hanya menerima JPG, JPEG, dan PNG.', HttpStatus.OK);
     }
-  } catch (error) {
-    throw new HttpException('File tidak valid, hanya menerima JPG, JPEG, dan PNG.', HttpStatus.OK);
   }
-}
 
-  async updateUserAvatar(
-    userId: string,
-    data: string,
-    filename: string,
-  ): Promise<any> {
+  async updateUserAvatar(userId: string, data: string): Promise<any> {
     try {
-      // Memanggil metode update dari UploadService dengan data, userId, dan filename
-      const result = await this.uploadService.update(data, userId, filename);
+      // Memanggil metode update dari UploadService dengan data dan userId
+      const result = await this.uploadService.update(data, userId);
       return result;
     } catch (error) {
       // Tangani pengecualian di sini jika diperlukan
@@ -368,6 +364,7 @@ export class AuthService {
       );
     }
   }
+  
 
   // async updateUserStatus(nip: number, status: UserStatus): Promise<User> {
   //   const user = await this.userService.findOneById(nip);
