@@ -5,9 +5,11 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from 'sequelize-typescript';
 import { Status } from './project.enum';
 import { Team } from '../team/team.entity';
+import { Task } from '../task/task.entity';
 
 @Table
 export class Project extends Model<Project> {
@@ -53,4 +55,7 @@ export class Project extends Model<Project> {
 
   @BelongsTo(() => Team) // Menunjukkan hubungan belongs to ke model Team
   team: Team; // Ini akan menjadi referensi ke objek Team yang terkait
+
+  @HasMany(() => Task) // Menunjukkan hubungan has many ke model Task
+  tasks: Task[];
 }

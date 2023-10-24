@@ -80,7 +80,6 @@ export class Task extends Model<Task> {
     allowNull: true,
   })
   parentId: number;
-  
 
   @BelongsTo(() => Task, { foreignKey: 'parentId', as: 'parent' })
   parentTask: Task;

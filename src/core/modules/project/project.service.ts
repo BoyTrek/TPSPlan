@@ -1,8 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { ProjectDto } from './project.dto';
 import { Project } from './project.entity';
 import { PROJECT_REPOSITORY, TEAM_REPOSITORY } from 'src/core/constants';
 import { Team } from '../team/team.entity';
+import { Task } from '../task/task.entity';
 
 
 @Injectable()
@@ -35,16 +37,22 @@ export class ProjectService {
         return project;
     }
     
-
-
-
   async findAll(): Promise<Project[]> {
-    // Di sini, Anda juga bisa mengambil data tim yang terkait dengan proyek
-    // dengan menggabungkan data dari tabel Project dan Team berdasarkan idTim
     return await this.projectRepository.findAll({
         include: [{all: true}]
     })
   }
+
+  // async findFull(): Promise<Project[]> {
+  //   const projects = await this.projectRepository.findAll({
+  //     include: [
+  //       { model: Team, include: [{ association: Team.associations.user }] }, // Mengambil informasi tim yang terkait dengan proyek
+  //       { model: Task }, // Mengambil informasi tugas yang terkait dengan proyek
+  //     ],
+  //   });
+
+  //   return projects;
+  // }
 
   findById(id: number): Project {
     const project = this.projects.find((p) => p.idProject === id);
@@ -54,38 +62,31 @@ export class ProjectService {
     return project;
   }
 
+  async getProjectByIdTim(idTim: number): Promise<Project[]> {
+    const projects = await this.projectRepository.findAll({
+        where: {
+            idTim: idTim,
+        },
+        include: [{ all: true }], // Jika Anda ingin mengambil data terkait dengan proyek, termasuk data tim
+    });
+    if (!projects || projects.length === 0) {
+        throw new NotFoundException(`Tidak ada proyek ditemukan untuk tim dengan ID ${idTim}`);
+    }
+  
+    return projects;
+  }
+
   update(id: number, projectDto: ProjectDto): Promise<Project> {
-    // Temukan proyek berdasarkan id
     return this.projectRepository.findByPk(id)
       .then(async (project) => {
         if (!project) {
           throw new NotFoundException(`Project with ID ${id} not found`);
         }
-        // Di sini, Anda bisa menambahkan logika untuk memperbarui proyek
-        // dan kolom idTim sesuai kebutuhan
-        // Misalnya:
         await project.update({
           ...projectDto,
         });
         return project;
       });
-}
-
-async getProjectByIdTim(idTim: number): Promise<Project[]> {
-  // Cari proyek berdasarkan idTim
-  const projects = await this.projectRepository.findAll({
-      where: {
-          idTim: idTim,
-      },
-      include: [{ all: true }], // Jika Anda ingin mengambil data terkait dengan proyek, termasuk data tim
-  });
-
-  // Jika tidak ada proyek yang ditemukan untuk tim ini, lempar NotFoundException
-  if (!projects || projects.length === 0) {
-      throw new NotFoundException(`Tidak ada proyek ditemukan untuk tim dengan ID ${idTim}`);
-  }
-
-  return projects;
 }
 
 async delete(id: number): Promise<void> {

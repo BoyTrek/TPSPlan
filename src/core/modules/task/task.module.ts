@@ -5,6 +5,7 @@ import { taskProviders } from './task.providers';
 import { memberProviders } from '../member/member.providers';
 import { teamsProviders } from '../team/team.providers';
 import { projectProviders } from '../project/project.providers';
+import { userProviders } from '../users/users.providers';
 
 @Module({
   controllers: [TaskController],
@@ -14,6 +15,7 @@ import { projectProviders } from '../project/project.providers';
     ...memberProviders,
     ...teamsProviders,
     ...projectProviders,
+    ...userProviders,
   ],
 })
 export class TaskModule {}

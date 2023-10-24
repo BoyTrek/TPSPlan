@@ -1,10 +1,10 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, HttpStatus, HttpException } from '@nestjs/common';
 import { MEMBER_REPOSITORY, TEAM_REPOSITORY } from 'src/core/constants';
 import { Team } from './team.entity';
 import { TeamDto } from './team.dto';
 import { User } from '../users/User.entity';
 import { Member } from '../member/member.entity';
-// import { Project } from '../project/project.entity';
+import { Project } from '../project/project.entity';
 
 @Injectable()
 export class TeamService {
@@ -22,6 +22,12 @@ export class TeamService {
       include: [{ model: User, attributes: { exclude: ['password'] } }],
     });
   }
+
+  async findFull(): Promise<Team[]> {
+    return await this.teamRepository.findAll<Team>({
+      include: [{ model: User, attributes: { exclude: ['password'] } }, Member, Project],
+    });
+  }  
   
 
   async addMember(idTim: number, nip: string): Promise<Member> {
@@ -67,12 +73,16 @@ export class TeamService {
   }
 
   async findMembersByTeamId(idTim: number): Promise<Member[]> {
-    const members = await this.memberRepository.findAll({
-      where: { teamId: idTim },
-      include: [{ all: true }],
-    });
+    try {
+      const members = await this.memberRepository.findAll({
+        where: { teamId: idTim },
+        include: [{ all: true }],
+      });
   
-    return members;
+      return members;
+    } catch (error) {
+      throw new HttpException('Gagal mencari anggota tim.', HttpStatus.OK);
+    }
   }
 
   async deleteMember(idTim: number, nip: string): Promise<void> {

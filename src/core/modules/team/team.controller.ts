@@ -9,6 +9,8 @@ import {
   UseGuards,
   NotFoundException,
   SetMetadata,
+  HttpStatus,
+  HttpException,
 } from '@nestjs/common';
 import { TeamService } from './team.service';
 import { Team, Team as TeamEntity } from './team.entity';
@@ -31,6 +33,14 @@ export class TeamController {
   async findAll() {
     // Dapatkan semua tim dalam database
     return await this.teamService.findAll();
+  }
+
+  // @hasRoles(UserRole.SUPERADMIN)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Get('/teamProp')
+  async findFull() {
+    // Dapatkan semua tim dalam database
+    return await this.teamService.findFull();
   }
 
   // @hasRoles(UserRole.ADMIN, UserRole.USER)
@@ -109,24 +119,13 @@ export class TeamController {
     }
   }
 
-<<<<<<< HEAD
-  @Get('members/:idTim')
-=======
  @Get('members/:idTim')
->>>>>>> fc78e876867dc7c3e49a3d4107d625d522a53699
   async findMembersByTeamId(@Param('idTim') idTim: number): Promise<Member[]> {
-    try {
       const members = await this.teamService.findMembersByTeamId(idTim);
       if (!members || members.length === 0) {
-        throw new NotFoundException(`No members found for team with ID ${idTim}`);
+        throw new HttpException (`No members found for team with ID`, HttpStatus.OK);
       }
       return members;
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw new NotFoundException(error.message);
-      }
-      throw error;
-    }
   }
 
 }

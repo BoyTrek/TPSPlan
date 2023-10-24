@@ -44,11 +44,17 @@ export class ProjectController {
 
   @hasRoles(UserRole.SUPERADMIN)
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Get()
+  @Get('/AllProject')
   async findAll(): Promise<ProjectEntity[]> {
     // Di sini, pastikan Anda mengambil data tim yang terkait dengan proyek
     return await this.projectService.findAll();
   }
+
+  // @UseGuards(AuthGuard('jwt'), RolesGuard)
+  // @Get('/projectProp')
+  // async findFull(): Promise<ProjectEntity[]> {
+  //   return await this.projectService.findFull();
+  // }
 
   @Get('by-team/:idTim')
     async getProjectsByTeamId(@Param('idTim', new ParseIntPipe()) idTim: number) {

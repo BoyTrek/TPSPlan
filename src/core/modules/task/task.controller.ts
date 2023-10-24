@@ -31,7 +31,6 @@ async create(
       teamId,
       memberId,
       projectId,
-      forUser,
     );
     return { message: 'Task created successfully', data: createdTask };
   } catch (error) {
@@ -45,6 +44,7 @@ async create(
   async findAll(): Promise<Task[]> {
     return await this.taskService.findAll();
   }
+  
 
   @Get(':id')
   async findById(@Param('id', ParseIntPipe) id: number): Promise<Task> {
@@ -74,9 +74,21 @@ async create(
     }
   }
 
-  @Get('user/:userId')
-  async getTasksByUserId(@Param('userId') userId: number): Promise<Task[]> {
-    return this.taskService.getTasksByUserId(userId);
+  @Get('byMember/:memberId')
+async getTasksByMemberId(@Param('memberId', ParseIntPipe) memberId: number): Promise<{ message: string; data?: Task[] } | { message: string }> {
+  try {
+    const tasks = await this.taskService.getTasksByMemberId(memberId);
+    return { message: 'Tasks retrieved successfully', data: tasks };
+  } catch (error) {
+    // Handle errors appropriately (e.g., return error message)
+    return { message: 'Error retrieving tasks' };
+  }
+}
+
+@Get('byUser/:forUser')
+  async getTasksByForUser(@Param('forUser') forUser: string): Promise<Task[]> {
+    const tasks = await this.taskService.getTasksByForUser(forUser);
+    return tasks;
   }
 
 }
