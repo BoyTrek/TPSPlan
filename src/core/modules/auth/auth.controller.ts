@@ -87,16 +87,10 @@ export class AuthController {
 
   // @hasRoles(UserRole.SUPERADMIN)
   // @UseGuards(AuthGuard('jwt'), RolesGuard, DoesUserExist)
-  @ApiParam({ name: 'nip', description: 'NIP', type: 'number' })
-  @ApiParam({ name: 'name', description: 'Name', type: 'string' })
-  @ApiParam({ name: 'email', description: 'Email', type: 'string' })
-  @ApiParam({ name: 'password', description: 'Password', type: 'string' })
-  @ApiParam({ name: 'role', description: 'Role', type: 'enum' })
   @Post('/signup')
   async registerAndSendPassword(@Body() user: UserDto) {
     // Panggil metode create di AuthService untuk membuat pengguna dengan kata sandi acak
     const result = await this.authService.create(user);
-
     // Kembalikan respons sesuai kebutuhan Anda
     return { message: 'User created successfully and password sent via email' };
   }

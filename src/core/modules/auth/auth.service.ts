@@ -111,7 +111,7 @@ export class AuthService {
       this.failedLoginAttempts.get(username) >= 3
     ) {
       throw new HttpException
-      ('Anda telah mencapai batas login gagal, silahkan menunggu beberapa saat sebelum login kembali',
+      ('Anda telah mencapai batas login gagal. Tunggu beberapa saat sebelum mencoba lagi dalam 1 menit',
       HttpStatus.OK,
       );
     }
@@ -185,8 +185,6 @@ export class AuthService {
 
     return password;
   }
-
-  
 
   public async create(user) {
     // Generate a random password

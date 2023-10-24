@@ -81,8 +81,8 @@ export class UploadService {
     // Lakukan pembaruan avatar berdasarkan userId, data, dan filename
     const [numberOfAffectedRows, [updatedFile]] = await this.databaseFilesRepository.update(
       { data, filename },
-      { where: { userId: Number(userId) }, returning: true }
-    );
+      { where: { userId: userId }, returning: true }
+   );   
   
     // Pastikan pembaruan berhasil dan ada file yang diperbarui
     if (numberOfAffectedRows === 0 || !updatedFile) {
