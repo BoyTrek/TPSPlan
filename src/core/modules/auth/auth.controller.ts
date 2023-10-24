@@ -180,12 +180,10 @@ export class AuthController {
     @UploadedFile() file: Express.Multer.File,
     @Param('userId') userId: string,
   ): Promise<any> {
-    try {
+    {
       const uploadedFile = await this.authService.uploadAvatar(file, userId);
       return { message: 'File berhasil diunggah', file: uploadedFile };
-    } catch (error) {
-      throw new BadRequestException('Gagal mengunggah file: ' + error.message);
-    }
+    }  
   }
 
   @Put('avatar/:userId')

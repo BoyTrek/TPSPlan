@@ -12,8 +12,8 @@ import { UsersService } from '../users/users.service';
 import { User } from '../users/User.entity';
 import { MailService } from '../mail/mail.service';
 import { UploadService } from 'src/core/upload/upload.service';
-import * as multer from 'multer';
-import { File } from 'buffer';
+import * as path from 'path';
+
 
 
 @Injectable()
@@ -24,9 +24,6 @@ export class AuthService {
     private readonly mailService: MailService, // Injeksi MailService
     private readonly uploadService: UploadService,
   ) {}
-
-
-
 
   async forgotPassword(email: string) {
     
@@ -325,26 +322,35 @@ export class AuthService {
 
   async uploadAvatar(file: Express.Multer.File, userId: string): Promise<any> {
     try {
-      // Mengonversi file ke data base64
-      const fileBuffer = file.buffer.toString('base64');
-      const base64Data = `data:${file.mimetype};base64,${fileBuffer}`;
-
+      // Get the file extension
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+  
+      // Check if the file extension is allowed
+      if (['.jpg', '.jpeg', '.png'].includes(fileExtension)) {
+        // File extension is allowed, proceed with processing
+        const fileBuffer = file.buffer.toString('base64');
+        const base64Data = `data:${file.mimetype};base64,${fileBuffer}`;
+  
       // Menyusun nama file dengan menambahkan timestamp untuk memastikan keunikan
       const timestamp = new Date().getTime();
       const fileName = `${timestamp}_${file.originalname}`;
-
+  
       // Menyimpan data base64 ke database dengan menyertakan filename yang baru
       const uploadedFile = await this.uploadService.create(
         fileName, // Gunakan nama file yang baru disusun
         base64Data,
         userId,
       );
-
-      return uploadedFile;
-    } catch (error) {
-      throw new BadRequestException('Gagal mengunggah file: ' + error.message);
+  
+      return uploadedFile; // Return the uploaded file details if needed
+    } else {
+      // File extension is not allowed, throw an error
+      throw new HttpException('File tidak valid, hanya menerima JPG, JPEG, dan PNG.', HttpStatus.OK);
     }
+  } catch (error) {
+    throw new HttpException('File tidak valid, hanya menerima JPG, JPEG, dan PNG.', HttpStatus.OK);
   }
+}
 
   async updateUserAvatar(
     userId: string,

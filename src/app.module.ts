@@ -19,7 +19,7 @@ import { MailModule } from './core/modules/mail/mail.module';
     TeamModule,
     MemberModule,
     TaskModule,
-    MailModule
+    MailModule,
   ],
   
 })
